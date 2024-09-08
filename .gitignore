@@ -1,0 +1,11 @@
+# Ignorar arquivos de configuração do editor
+.vscode/
+
+# Ignorar arquivos de comparação
+/exemplo/
+
+# Ignorar diretórios de build
+/objects/
+
+# Ignorar arquivos de execução
+trab3
