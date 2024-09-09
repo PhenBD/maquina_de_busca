@@ -91,39 +91,28 @@ TST *TST_create_stop_words(char *filename) {
 }
 
 TST *TST_create_words_table(char *filename, TST *stop_words) {
-    char *dir = malloc(strlen(filename) + 12);
-    strcpy(dir, filename);
-    dir = strcat(dir, "/index.txt");
-
-    FILE *f = fopen(dir, "r");
-    if (f == NULL) { printf("Directory ""%s"" not found.\n", dir); exit(1); }
+    ForwardList *list_pages = list_index_pages(filename);
 
     TST *t = NULL;
 
-    char *line = NULL;
-    char delimit[] = " \t\n";
+    while (forward_list_size(list_pages) > 0) {
+        char *page_name = forward_list_pop_front(list_pages);
+        char *page_directory = malloc(strlen(filename) + strlen(page_name) + 9);
+        strcpy(page_directory, filename);
+        strcat(page_directory, "/pages/");
+        strcat(page_directory, page_name);
 
-    size_t len = 0;
-    ssize_t read;
+        FILE *page_file = fopen(page_directory, "r");
+        if (page_file == NULL) { printf("File ""%s"" not found.\n", page_directory); exit(1); }
 
-    while ((read = getline(&line, &len, f)) != -1) {
-        char *pages = malloc(strlen(filename) + strlen(line) + 50);
-        strcpy(pages, filename);
-        strcat(pages, "/pages/");
-        // probably need to fix this
-        char *page_name = strtok(line, delimit);
-        strcat(pages, page_name);
+        char *line = NULL;
+        char delimit[] = " \t\n";
 
-        FILE *page_file = fopen(pages, "r");
-        if (page_file == NULL) { printf("File ""%s"" not found.\n", pages); exit(1); }
+        size_t len = 0;
+        ssize_t read;
 
-        char *line_page = NULL;
-
-        size_t len_page = 0;
-        ssize_t read_page;
-
-        while ((read_page = getline(&line_page, &len_page, page_file)) != -1) {
-            char *token = strtok(line_page, delimit);
+        while ((read = getline(&line, &len, page_file)) != -1) {
+            char *token = strtok(line, delimit);
             while (token != NULL) {
                 if (token == NULL) { continue; }
 
@@ -152,13 +141,13 @@ TST *TST_create_words_table(char *filename, TST *stop_words) {
             }
         }
 
-        free(line_page);
+        free(line);
+        free(page_directory);
+        free(page_name);
         fclose(page_file);
-        free(pages);
     }
-    free(line);
-    fclose(f);
-    free(dir);
+
+    forward_list_destroy(list_pages);
     return t;
 }
 
