@@ -15,6 +15,11 @@ void TST_foward_list_destroy(void *list) {
     forward_list_destroy(list);
 }
 
+void TST_in_out_destroy(void *io) {
+    In_Out *in_out = (In_Out *)io;
+    in_out_destroy(in_out);
+}
+
 int strings_compare(data_type data, void *key){
     char *a = (char *)data;
     char *b = (char *)key;
@@ -70,6 +75,7 @@ TST *TST_create_stop_words(char *filename) {
     while ((read = getline(&line, &len, f)) != -1) {
         char *key = strtok(line, delimit);
         String *s = strings_create(key);
+        strings_to_lower(s);
         int *id = (int *)malloc(sizeof(int));
 
         if (TST_contains(t, s)) {
@@ -149,4 +155,80 @@ TST *TST_create_words_table(char *filename, TST *stop_words) {
 
     forward_list_destroy(list_pages);
     return t;
+}
+
+TST *TST_create_graph(char *filename){
+    TST *graph = NULL;
+
+    char *dir = malloc(strlen(filename) + 16);
+    strcpy(dir, filename);
+    dir = strcat(dir, "/graph.txt");
+    
+    FILE *f = fopen(dir, "r");
+    if (f == NULL) { printf("Directory ""%s"" not found.\n", dir); exit(1); }
+
+    int count = 0;
+    while (!feof(f))
+    {
+        char line[256];
+        int n;
+        fscanf(f, "%s %d", line, &n);
+        String *s = strings_create(line);
+        if (!(TST_contains(graph, s)))
+        {
+            In_Out *io = in_out_create();
+            for (int i = 0; i < n; i++)
+            {
+                fscanf(f, "%s", line);
+                out_insert(io, line);
+
+                String *page = strings_create(line);
+                if (!(TST_contains(graph, page)))
+                {
+                    In_Out *aux = in_out_create();
+                    in_insert(aux, line);
+                    graph = TST_insert(graph, page, aux);
+                }
+                else
+                {
+                    In_Out *aux = TST_search(graph, page);
+                    in_insert(aux, line);
+                }
+                strings_destroy(page);
+            }
+            fscanf(f, "\n");
+
+            graph = TST_insert(graph, s, io);
+        }
+        else{
+            In_Out *io = TST_search(graph, s);
+            for (int i = 0; i < n; i++)
+            {
+                fscanf(f, "%s", line);
+                out_insert(io, line);
+
+                String *page = strings_create(line);
+                if (!(TST_contains(graph, page)))
+                {
+                    In_Out *aux = in_out_create();
+                    in_insert(aux, line);
+                    TST_insert(graph, page, aux);
+                }
+                else
+                {
+                    In_Out *aux = TST_search(graph, page);
+                    in_insert(aux, line);
+                }
+                strings_destroy(page);
+            }
+            fscanf(f, "\n");
+        }
+
+        count++;
+        strings_destroy(s);
+    }
+
+    fclose(f);
+    free(dir);
+    return graph;
 }

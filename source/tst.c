@@ -51,11 +51,12 @@ int TST_contains(TST *t, String *key) {
 
 void TST_destroy(TST *t, DestroyFunc destroy) {
     if (t == NULL) { return; }
-    
+
     TST_destroy(t->l, destroy);
     TST_destroy(t->m, destroy);
     TST_destroy(t->r, destroy);
-
+    
+    
     if (t->val != NULL) { destroy(t->val); }
     
     free(t);
