@@ -1,12 +1,8 @@
 #ifndef TST_H
 #define TST_H
 
-#include <stdlib.h>
 #include <stdio.h>
-#include "strings.h"
-#include "forward_list.h"
 #include "utils.h"
-#include <sys/types.h>
 
 #define Value void *
 
