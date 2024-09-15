@@ -21,7 +21,7 @@ TST *rec_insert(TST *t, String *key, Value val, int d) {
     else if (c > t->c) { t->r = rec_insert(t->r, key, val, d); }
     else if (d < strings_get_len(key) - 1) {
         t->m = rec_insert(t->m, key, val, d+1);
-    } else { t->val = val;  }
+    } else { t->val = val; }
     return t;
 }
 

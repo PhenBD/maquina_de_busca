@@ -55,7 +55,7 @@ void PQ_insert(PQ* pq, Item *v);
  * @param pq A fila de prioridade.
  * @return O item de menor prioridade.
  */
-Item *PQ_delmin(PQ *pq);
+Item *PQ_delmax(PQ *pq);
 
 /**
  * Retorna o item de menor prioridade da fila de prioridade sem removê-lo.
@@ -63,16 +63,7 @@ Item *PQ_delmin(PQ *pq);
  * @param pq A fila de prioridade.
  * @return O item de menor prioridade.
  */
-Item *PQ_min(PQ *pq);
-
-/**
- * Diminui o valor de um item na fila de prioridade.
- *
- * @param pq A fila de prioridade.
- * @param key A chave do item a ser atualizado.
- * @param value O novo valor do item.
- */
-void PQ_decrease_key(PQ *pq, int key, double value);
+Item *PQ_max(PQ *pq);
 
 /**
  * Verifica se a fila de prioridade contém um item com a chave especificada.
