@@ -15,6 +15,6 @@ ForwardList *list_index_pages(char *filename);
 TST *TST_create_stop_words(char *filename);
 TST *TST_create_words_table(char *filename, TST *stop_words);
 TST *TST_create_pr(char *filename);
-PQ *page_ranking(TST *pr, TST *T, ForwardList *search_words, char *filename);
+TST *page_ranking(TST *pr, char *filename);
 
 #endif

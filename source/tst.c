@@ -56,7 +56,6 @@ void TST_destroy(TST *t, DestroyFunc destroy) {
     TST_destroy(t->m, destroy);
     TST_destroy(t->r, destroy);
     
-    
     if (t->val != NULL) { destroy(t->val); }
     
     free(t);

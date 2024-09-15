@@ -230,12 +230,13 @@ TST *TST_create_pr(char *filename){
 
     fclose(f);
     free(dir);
+    
+    pr = page_ranking(pr, filename);
+
     return pr;
 }
 
-PQ *page_ranking(TST *pr, TST *T, ForwardList *search_words, char *filename){
-    PQ *rank = PQ_create(forward_list_size(search_words));
-
+TST *page_ranking(TST *pr, char *filename){
     ForwardList *pages = list_index_pages(filename);
     
     float a = 0.85;
@@ -249,81 +250,72 @@ PQ *page_ranking(TST *pr, TST *T, ForwardList *search_words, char *filename){
         strings_destroy(page);
     }
 
-    while (forward_list_size(search_words) > 0)
-    {
-        String *s = forward_list_pop_front(search_words);
-        printf("word: %s\n", strings_get_string(s));
-        ForwardList *pages_with_word_s = TST_search(T, s);
-        printf("presences: %d\n", forward_list_size(pages_with_word_s));
-        for (int i = 0; i < forward_list_size(pages_with_word_s); i++)
-        {
-            char *s = forward_list_get(pages_with_word_s, i);
-            printf("page: %s\n", s);
+    double E = 0.0;
+    int k = 0;
+    do{
+        // printf("k: %d\n", k);
+
+        for (int i = 0; i < n; i++) {
+            char *s = forward_list_get(pages, i);
+            // printf("page: %s\n", s);
             String *page = strings_create(s);
 
-            Page_Rank *page_rank_search_word = TST_search(pr, page);
-
-            double E;
-            // printf("i: %d\n", i);
-
-            int k = 0;
-            do{
-                printf("k: %d\n", k);
-                double sum = 0.0;
-                for (int j = 0; j < page_rank_size_in(page_rank_search_word); j++)
-                {
-                    ForwardList *in = page_rank_get_in(page_rank_search_word);
-                    char *x = forward_list_get(in, j);
-                    String *in_page = strings_create(x);
-                    // printf("in: %s\n", x);
-                    // printf("j: %d\n", j);
-
-                    Page_Rank *in_page_rank = TST_search(pr, in_page);
-
-                    // printf("old: %.6f\n", page_rank_get_old_val(in_page_rank));
-                    // printf("size out: %d\n", page_rank_size_out(in_page_rank));
-
-                    sum += page_rank_get_old_val(in_page_rank) / fabs(page_rank_size_out(in_page_rank));
-                    // printf("sum: %.6f\n", sum);
-                    strings_destroy(in_page);
-                }
-                printf("new 1: %.6f\n", page_rank_get_val(page_rank_search_word));
-                printf("old 1: %.6f\n", page_rank_get_old_val(page_rank_search_word));
-
-                page_rank_set_old_val(page_rank_search_word, page_rank_get_val(page_rank_search_word));
-                page_rank_set_val(page_rank_search_word, (1 - a / n) + (a * sum));
-
-                if(page_rank_size_out(page_rank_search_word) == 0){
-                    page_rank_set_val(page_rank_search_word, (1 - a / n) + (a *  page_rank_get_old_val(page_rank_search_word)) + (a * sum));
-                }
-
-                printf("new 2: %.6f\n", page_rank_get_val(page_rank_search_word));
-                printf("old 2: %.6f\n", page_rank_get_old_val(page_rank_search_word));
-
-                double sum_diff = 0.0;
-                for (int j = 0; j < n; j++)
-                {
-                    char *s = forward_list_get(pages, j);
-                    String *page = strings_create(s);
-                    Page_Rank *page_rank_e = TST_search(pr, page);
-
-                    // printf("new: %.6f\n", page_rank_get_val(page_rank_e));
-                    // printf("old: %.6f\n", page_rank_get_old_val(page_rank_e));
-                    sum_diff += fabs(page_rank_get_val(page_rank_e) - page_rank_get_old_val(page_rank_e));
-                    printf("sum_diff: %.6f\n", sum_diff);
-                    strings_destroy(page);
-                }
-                E = (1.0 / n) * sum_diff;
-                printf("E: %.6f\n", E);
-
-                k++;
-            } while (E > 0.000001);
+            Page_Rank *page_rank = TST_search(pr, page);
 
             strings_destroy(page);
+
+            // printf("i: %d\n", i);
+            
+            double sum = 0.0;
+            for (int j = 0; j < page_rank_size_in(page_rank); j++)
+            {
+                ForwardList *in = page_rank_get_in(page_rank);
+                char *x = forward_list_get(in, j);
+                String *in_page = strings_create(x);
+                // printf("in: %s\n", x);
+                // printf("j: %d\n", j);
+
+                Page_Rank *in_page_rank = TST_search(pr, in_page);
+
+                // printf("old: %.6f\n", page_rank_get_old_val(in_page_rank));
+                // printf("size out: %d\n", page_rank_size_out(in_page_rank));
+
+                sum += page_rank_get_old_val(in_page_rank) / fabs(page_rank_size_out(in_page_rank));
+                // printf("sum: %.6f\n", sum);
+                strings_destroy(in_page);
+            }
+            // printf("new 1: %.6f\n", page_rank_get_val(page_rank));
+            // printf("old 1: %.6f\n", page_rank_get_old_val(page_rank));
+
+            page_rank_set_old_val(page_rank, page_rank_get_val(page_rank));
+            page_rank_set_val(page_rank, (1 - a / n) + (a * sum));
+
+            if(page_rank_size_out(page_rank) == 0){
+                page_rank_set_val(page_rank, (1 - a / n) + (a * page_rank_get_old_val(page_rank)) + (a * sum));
+            }
+
+            // printf("new 2: %.6f\n", page_rank_get_val(page_rank));
+            // printf("old 2: %.6f\n", page_rank_get_old_val(page_rank));
+        } 
+
+        double sum_diff = 0.0;
+        for (int j = 0; j < n; j++)
+        {
+            char *s = forward_list_get(pages, j);
+            String *page = strings_create(s);
+            Page_Rank *page_rank_e = TST_search(pr, page);
+
+            // printf("new: %.6f\n", page_rank_get_val(page_rank_e));
+            // printf("old: %.6f\n", page_rank_get_old_val(page_rank_e));
+            sum_diff += fabs(page_rank_get_val(page_rank_e) - page_rank_get_old_val(page_rank_e));
+            // printf("sum_diff: %.6f\n", sum_diff);
+            strings_destroy(page);
         }
-        
-        strings_destroy(s);
-    }
+        E = (1.0 / n) * sum_diff;
+        // printf("E: %.7f\n", E);
+
+        k++;
+    } while (E > 0.000001);
 
     while (forward_list_size(pages) > 0)
     {
@@ -331,5 +323,5 @@ PQ *page_ranking(TST *pr, TST *T, ForwardList *search_words, char *filename){
     }
     forward_list_destroy(pages);
 
-    return rank;
+    return pr;
 }
