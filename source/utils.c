@@ -1,7 +1,8 @@
 #include "../headers/utils.h"
 
 void TST_id_destroy(void *id) {
-    free(id);
+    int *aux = (int *)id;
+    free(aux);
 }
 
 void TST_foward_list_destroy(void *list) {

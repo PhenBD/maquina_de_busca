@@ -36,41 +36,65 @@ int main(int argc, char *argv[])
             }
             
             token = strtok(NULL, delimit);
-            strings_destroy(s);
         }
 
+        TST *set = NULL;
         ForwardList *same_pages = forward_list_construct();
 
         for (int i = 0; i < forward_list_size(search_words); i++)
         {
-            String *s = forward_list_get(search_words, i);
+            String *sw = forward_list_get(search_words, i);
             // printf("word: %s\n", strings_get_string(s));
 
-            ForwardList *pages = TST_search(T, s);
-
-            TST *set = NULL;
-
-            int *id = (int *)malloc(sizeof(int));
-            *id = 0;
+            ForwardList *pages = TST_search(T, sw);
 
             for (int j = 0; j < forward_list_size(pages); j++)
             {
+                int *count = (int *)malloc(sizeof(int));
+                *count = 0;
+
                 char *page = forward_list_get(pages, j);
                 String *s = strings_create(page);
                 
                 if (!TST_contains(set, s))
                 {
-                    set = TST_insert(set, s, id);
-                    *id += 1;
+                    *count = 1;
+                    set = TST_insert(set, s, count);
                 }
                 else
                 {
+                    int *aux = TST_search(set, s);
+                    *aux += 1;
+                    free(count);
+                }
+
+                strings_destroy(s);
+            }
+        }
+
+        for (int j = 0; j < forward_list_size(pages); j++)
+        { 
+            char *page = forward_list_get(pages, j);
+            String *s = strings_create(page);
+            if (TST_contains(set, s))
+            {
+                int *count = TST_search(set, s);
+                
+                if (*count == forward_list_size(search_words))
+                {
                     forward_list_push_back(same_pages, s);
                 }
+                else
+                {
+                    strings_destroy(s);
+                }
             }
-            
-            TST_destroy(set, TST_id_destroy);
+            else
+            {
+                strings_destroy(s);
+            }
         }
+        TST_destroy(set, TST_id_destroy);
 
         PQ *rank_pages = PQ_create(forward_list_size(same_pages));
 
@@ -82,18 +106,59 @@ int main(int argc, char *argv[])
             PQ_insert(rank_pages, item);
         }
 
-        while (!PQ_empty(rank_pages))
+        printf("search:");
+        while (forward_list_size(search_words) >= 0)
+        {   
+            if(forward_list_size(search_words) == 0) { printf("\n"); break; }
+
+            String *search_word = forward_list_pop_front(search_words);
+            
+            if(forward_list_size(search_words) != 0)
+                printf("%s ", strings_get_string(search_word));
+            else{
+                printf("%s\n", strings_get_string(search_word));
+                strings_destroy(search_word);
+                break;
+            }
+
+            strings_destroy(search_word);
+        }
+        printf("pages:");
+        while (forward_list_size(same_pages) >= 0)
+        {   
+            if(forward_list_size(same_pages) == 0) { printf("\n"); break; }
+
+            String *same_page = forward_list_pop_front(same_pages);
+            
+            if(forward_list_size(same_pages) != 0)
+                printf("%s ", strings_get_string(same_page));
+            else{
+                printf("%s\n", strings_get_string(same_page));
+                strings_destroy(same_page);
+                break;
+            }
+
+            strings_destroy(same_page);
+        }
+        printf("pr:");
+        while (PQ_size(rank_pages) >= 0)
         {
+            if(PQ_size(rank_pages) == 0) { printf("\n"); break; }
+
             Item *item = PQ_delmax(rank_pages);
-            printf("%d %f\n", item_getKey(item), item_getValue(item));
+            
+            if (PQ_size(rank_pages) != 0)
+                printf("%f ", item_getValue(item));
+            else{
+                printf("%f\n", item_getValue(item));
+                free(item);
+                break;
+            }
             free(item);
         }
 
-        while (forward_list_size(search_words) > 0)
-        {
-            strings_destroy(forward_list_pop_front(search_words));
-        }
         forward_list_destroy(search_words);
+        forward_list_destroy(same_pages);
         PQ_destroy(rank_pages);
     }
 
