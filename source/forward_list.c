@@ -158,13 +158,10 @@ ForwardList *forward_list_reverse(ForwardList *l){
     return l2;
 }
 
-void forward_list_clear(ForwardList *l){
+void forward_list_clear(ForwardList *l, void (*destroy_fn)(void *)){
     int size = l->size;
-
-    for (int i = 0; i < size; i++)
-    {
-        forward_list_pop_front(l);
-    }
+    if(destroy_fn == NULL) exit(printf("FORWARD LIST CLEAR ERROR: Cannot free items without destroy function\n")); 
+    else for (int i = 0; i < size; i++) if(destroy_fn != NULL) destroy_fn((void *)forward_list_pop_front(l));
 }
 
 void forward_list_remove(ForwardList *l, data_type val){
@@ -256,15 +253,15 @@ data_type list_iterator_next(ListIterator *it){
 }
 
 int list_iterator_is_over(ListIterator *it){
-    if (it->current == NULL)
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-    
+    // if (it->current == NULL)
+    // {
+    //     return 1;
+    // }
+    // else
+    // {
+    //     return 0;
+    // }
+    return (it->current == NULL) ? 1 : 0;
 }
 
 void list_iterator_destroy(ListIterator *it){

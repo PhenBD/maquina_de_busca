@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "headers/utils.h"
 
+// #define DEBUG_MODE
+
 int main(int argc, char *argv[])
 {
     if(argc < 2)
@@ -31,7 +33,9 @@ int main(int argc, char *argv[])
             
             if (TST_contains(T, s))
             {
-                // printf("word: %s\n", strings_get_string(s));
+                #ifdef DEBUG_MODE
+                printf("word: %s\n", strings_get_string(s));
+                #endif
                 forward_list_push_back(search_words, s);
             }
             
@@ -44,8 +48,9 @@ int main(int argc, char *argv[])
         for (int i = 0; i < forward_list_size(search_words); i++)
         {
             String *sw = forward_list_get(search_words, i);
-            // printf("word: %s\n", strings_get_string(s));
-
+            #ifdef DEBUG_MODE
+            printf("word: %s\n", strings_get_string(sw));
+            #endif
             ForwardList *pages = TST_search(T, sw);
 
             for (int j = 0; j < forward_list_size(pages); j++)
@@ -123,6 +128,7 @@ int main(int argc, char *argv[])
 
             strings_destroy(search_word);
         }
+
         printf("pages:");
         while (forward_list_size(same_pages) >= 0)
         {   
@@ -140,6 +146,7 @@ int main(int argc, char *argv[])
 
             strings_destroy(same_page);
         }
+
         printf("pr:");
         while (PQ_size(rank_pages) >= 0)
         {
@@ -163,10 +170,8 @@ int main(int argc, char *argv[])
     }
 
     free(line);
-    while (forward_list_size(pages) > 0)
-    {
-        free(forward_list_pop_front(pages));
-    }
+
+    while (forward_list_size(pages) > 0) free(forward_list_pop_front(pages));
     forward_list_destroy(pages);
     TST_destroy(S, TST_id_destroy);
     TST_destroy(T, TST_foward_list_destroy);

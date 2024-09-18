@@ -119,7 +119,7 @@ ForwardList *forward_list_reverse(ForwardList *l);
  * @note
  * The caller is responsible for freeing the memory allocated for the data stored in the nodes.
  */
-void forward_list_clear(ForwardList *l);
+void forward_list_clear(ForwardList *l, void (*destroy_fn)(void *));
 
 /**
  * @brief Removes all nodes with the given value from the linked list.
