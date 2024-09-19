@@ -2,48 +2,58 @@
 
 struct page_rank
 {
-    ForwardList *in, *out;
+    Vector *in, *out;
     double pr, pr_old;
 };
+
+int strings_compare_vector_in_out(void *a, void *b) {
+    String *s1 = (String *)a;
+    String *s2 = (String *)b;
+    return strings_compare(s1, s2);
+}
+
+void strings_destroy_vector_in_out(void *s) {
+    strings_destroy((String *)s);
+}
 
 Page_Rank *page_rank_create()
 {
     Page_Rank *pr = (Page_Rank *)malloc(sizeof(Page_Rank));
-    pr->in = forward_list_construct();
-    pr->out = forward_list_construct();
+    pr->in = vector_construct(strings_compare_vector_in_out, strings_destroy_vector_in_out);
+    pr->out = vector_construct(strings_compare_vector_in_out, strings_destroy_vector_in_out);
     pr->pr = 0.0;
 
     return pr;
 }
 
-ForwardList *page_rank_get_in(Page_Rank *pr)
+Vector *page_rank_get_in(Page_Rank *pr)
 {
     return pr->in;
 }
 
-ForwardList *page_rank_get_out(Page_Rank *pr)
+Vector *page_rank_get_out(Page_Rank *pr)
 {
     return pr->out;
 }
 
 int page_rank_size_in(Page_Rank *pr)
 {
-    return forward_list_size(pr->in);
+    return vector_size(pr->in);
 }
 
 int page_rank_size_out(Page_Rank *pr)
 {
-    return forward_list_size(pr->out);
+    return vector_size(pr->out);
 }
 
-void page_rank_insert_in(Page_Rank *pr, char *page)
+void page_rank_insert_in(Page_Rank *pr, String *page)
 {
-    forward_list_push_back(pr->in, strdup(page));
+    vector_push_back(pr->in, page);
 }
 
-void page_rank_insert_out(Page_Rank *pr, char *page)
+void page_rank_insert_out(Page_Rank *pr, String *page)
 {
-    forward_list_push_back(pr->out, strdup(page));
+    vector_push_back(pr->out, page);
 }
 
 double page_rank_get_val(Page_Rank *pr)
@@ -69,17 +79,7 @@ void page_rank_set_old_val(Page_Rank *pr, double val)
 
 void page_rank_destroy(Page_Rank *pr)
 {
-    while (forward_list_size(pr->in) > 0)
-    {
-        free(forward_list_pop_front(pr->in));
-    }
-    forward_list_destroy(pr->in);
-    
-    while (forward_list_size(pr->out) > 0)
-    {
-        free(forward_list_pop_front(pr->out));
-    }
-    forward_list_destroy(pr->out);
-
+    vector_destroy(pr->in);
+    vector_destroy(pr->out);
     free(pr);
 }

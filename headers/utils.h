@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include "forward_list.h"
+#include "vector.h"
 #include "tst.h"
 #include "page_rank.h"
 #include "rank.h"
@@ -20,7 +21,7 @@ void TST_id_destroy(void *id);
  * 
  * @param list 
  */
-void TST_foward_list_string_destroy(void *list);
+void TST_vector_string_destroy(void *list);
 
 /**
  * @brief Destroy a TST node with a Page_Rank value

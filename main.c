@@ -2,17 +2,23 @@
 #include <stdlib.h>
 #include "headers/utils.h"
 #include "headers/rank.h"
+#include <time.h>
 
 int main(int argc, char *argv[])
 {
+    clock_t start = clock();
     if(argc < 2)
 		exit(printf("ERROR: Missing arguments!\n"));
     char *filename = argv[1];
 
     StringArray *index = list_index_pages(filename);
+    printf("Index size: %d\n", string_array_size(index));
     TST *S = TST_create_stop_words(filename);
+    printf("Stop words done.\n");
     TST *T = TST_create_words_table(filename, S, index);
+    printf("Words table done.\n");
     TST *pr = TST_create_pr(filename, index);
+    printf("Page rank done.\n");
 
     char *line = NULL;
     size_t len = 0;
@@ -44,8 +50,11 @@ int main(int argc, char *argv[])
 
     string_array_destroy(index);
     TST_destroy(S, TST_id_destroy);
-    TST_destroy(T, TST_foward_list_string_destroy);
+    TST_destroy(T, TST_vector_string_destroy);
     TST_destroy(pr, TST_page_rank_destroy);
 
+    clock_t end = clock();
+    double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("Time spent: %f\n", time_spent);
     return 0;
 }

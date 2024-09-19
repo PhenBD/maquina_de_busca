@@ -1,9 +1,9 @@
 #ifndef PAGE_RANK_H
 #define PAGE_RANK_H
 
-#include "forward_list.h"
+#include "vector.h"
 #include "tst.h"
-#include <string.h>
+#include "strings.h"
 
 typedef struct page_rank Page_Rank;
 
@@ -20,15 +20,15 @@ Page_Rank *page_rank_create();
  * @param pr Pointer to the page rank.
  * @return Pointer to the list of pages that point to the page.
  */
-ForwardList *page_rank_get_in(Page_Rank *pr);
+Vector *page_rank_get_in(Page_Rank *pr);
 
 /**
  * @brief Retrieves the outgoing links of a page rank.
  * 
  * @param pr Pointer to the page rank.
- * @return Pointer to a ForwardList containing the outgoing links.
+ * @return Pointer to a Vector containing the outgoing links.
  */
-ForwardList *page_rank_get_out(Page_Rank *pr);
+Vector *page_rank_get_out(Page_Rank *pr);
 
 /**
  * @brief Gets the number of incoming links to a page.
@@ -52,7 +52,7 @@ int page_rank_size_out(Page_Rank *pr);
  * @param pr Pointer to the page rank.
  * @param page Pointer to the name of page to be inserted.
  */
-void page_rank_insert_in(Page_Rank *pr, char *page);
+void page_rank_insert_in(Page_Rank *pr, String *page);
 
 /**
  * @brief Inserts an outgoing link from a page rank.
@@ -60,7 +60,7 @@ void page_rank_insert_in(Page_Rank *pr, char *page);
  * @param pr Pointer to the page rank.
  * @param page Pointer to the name of page to be inserted.
  */
-void page_rank_insert_out(Page_Rank *pr, char *page);
+void page_rank_insert_out(Page_Rank *pr, String *page);
 
 /**
  * @brief Retrieves the current value of the page rank.

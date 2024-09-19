@@ -1,18 +1,22 @@
 #include "../headers/utils.h"
 
+int strings_compare_vector(void *a, void *b) {
+    String *s1 = (String *)a;
+    String *s2 = (String *)b;
+    return strings_compare(s1, s2);
+}
+
+void strings_destroy_vector(void *s) {
+    strings_destroy((String *)s);
+}
+
 void TST_id_destroy(void *id) {
     int *aux = (int *)id;
     free(aux);
 }
 
-void TST_foward_list_string_destroy(void *list) {
-    while (forward_list_size(list) > 0)
-    {
-        String *aux = forward_list_pop_front(list);
-        strings_destroy(aux);
-    }
-    
-    forward_list_destroy(list);
+void TST_vector_string_destroy(void *list) {
+    vector_destroy((Vector *)list);
 }
 
 void TST_page_rank_destroy(void *pr) {
@@ -133,20 +137,19 @@ TST *TST_create_words_table(char *filename, TST *stop_words, StringArray *index)
                 {
                     if (!(TST_contains(tst_words_table, word))) 
                     {
-                        ForwardList *fl = forward_list_construct();
+                        Vector *v = vector_construct(strings_compare_vector, strings_destroy_vector);
                         String *p = strings_create(strings_get(page));
-                        forward_list_push_back(fl, p);
-                        tst_words_table = TST_insert(tst_words_table, word, fl);
+                        vector_push_back(v, p);
+                        tst_words_table = TST_insert(tst_words_table, word, v);
                     }
                     else 
                     {
-                        ForwardList *fl = TST_search(tst_words_table, word);
+                        Vector *v = TST_search(tst_words_table, word);
 
-                        // provável ponto de gargalo
-                        if (forward_list_find(fl, page, strings_compare) == NULL)
+                        if (vector_binary_search(v, page) == -1)
                         {
                             String *p = strings_create(strings_get(page));
-                            forward_list_push_back(fl, p);
+                            vector_push_back(v, p);
                         }
                     }
                 }
@@ -201,12 +204,14 @@ TST *TST_create_graph(char *filename, StringArray *index){
         for (int i = 0; i < n; i++)
         {
             char *out = strtok(NULL, " \n");
-            page_rank_insert_out(node, out);
+            page_rank_insert_out(node, strings_create(out));
             
             String *page_out = strings_create(out);
 
             Page_Rank *aux = TST_search(graph, page_out);
-            page_rank_insert_in(aux, strings_get(page));
+
+            String *page_in = strings_create(strings_get(page));
+            page_rank_insert_in(aux, page_in);
 
             strings_destroy(page_out);
         }
@@ -234,7 +239,6 @@ TST *page_ranking(TST *graph, char *filename, StringArray *index){
     }
 
     double E = 0.0;
-
     // Iteration >= 1
     do{
         for (int i = 0; i < n; i++) {
@@ -245,15 +249,12 @@ TST *page_ranking(TST *graph, char *filename, StringArray *index){
             double sum = 0.0;
             for (int j = 0; j < page_rank_size_in(page_rank); j++)
             {
-                ForwardList *in = page_rank_get_in(page_rank);
-                char *x = forward_list_get(in, j);
-                String *in_page = strings_create(x);
+                Vector *in = page_rank_get_in(page_rank);
+                String *in_page = vector_get(in, j);
 
                 Page_Rank *in_page_rank = TST_search(graph, in_page);
 
                 sum += page_rank_get_old_val(in_page_rank) / fabs(page_rank_size_out(in_page_rank));
-
-                strings_destroy(in_page);
             }
 
             // PageRank formula
@@ -317,11 +318,11 @@ ForwardList *get_same_pages_from_search_words(ForwardList *search_words, TST *T)
 
         if (!TST_contains(T, sw)) { continue; }
 
-        ForwardList *pages = TST_search(T, sw);
+        Vector *pages = TST_search(T, sw);
 
-        for (int j = 0; j < forward_list_size(pages); j++)
+        for (int j = 0; j < vector_size(pages); j++)
         {
-            String *page = forward_list_get(pages, j);
+            String *page = vector_get(pages, j);
             
             if (!TST_contains(set, page))
             {
