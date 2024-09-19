@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include "headers/utils.h"
 
-// #define DEBUG_MODE
-
 int main(int argc, char *argv[])
 {
     if(argc < 2)
@@ -33,9 +31,6 @@ int main(int argc, char *argv[])
             
             if (TST_contains(T, s))
             {
-                #ifdef DEBUG_MODE
-                // printf("word: %s\n", strings_get_string(s));
-                #endif
                 forward_list_push_back(search_words, s);
             }
             
@@ -48,9 +43,6 @@ int main(int argc, char *argv[])
         for (int i = 0; i < forward_list_size(search_words); i++)
         {
             String *sw = forward_list_get(search_words, i);
-            #ifdef DEBUG_MODE
-            // printf("word: %s\n", strings_get_string(sw));
-            #endif
             ForwardList *pages = TST_search(T, sw);
 
             for (int j = 0; j < forward_list_size(pages); j++)
@@ -130,8 +122,6 @@ int main(int argc, char *argv[])
                 printf("%s\n", strings_get_string(same_page));
                 break;
             }
-
-            strings_destroy(same_page);
         }
 
         printf("pr:");
