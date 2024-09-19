@@ -192,27 +192,27 @@ TST *TST_create_graph(char *filename, StringArray *index){
 
     while ((read = getline(&line, &len, f)) != -1) {
         int n;
-        fscanf(f, "%s %d", line, &n);
-        String *page_in = strings_create(line);
+        char *s = strtok(line, " \n");
+        sscanf(strtok(NULL, " \n"), "%d", &n);
+        String *page = strings_create(s);
 
-        Page_Rank *node = TST_search(graph, page_in);
+        Page_Rank *node = TST_search(graph, page);
         for (int i = 0; i < n; i++)
         {
-            fscanf(f, "%s", line);
-            page_rank_insert_out(node, line);
-
-            String *page_out = strings_create(line);
+            char *out = strtok(NULL, " \n");
+            page_rank_insert_out(node, out);
+            
+            String *page_out = strings_create(out);
 
             Page_Rank *aux = TST_search(graph, page_out);
-            page_rank_insert_in(aux, strings_get_string(page_in));
+            page_rank_insert_in(aux, strings_get_string(page));
 
             strings_destroy(page_out);
         }
-        fscanf(f, "\n");
 
-        graph = TST_insert(graph, page_in, node);
+        graph = TST_insert(graph, page, node);
 
-        strings_destroy(page_in);
+        strings_destroy(page);
     }
     free(line);
     fclose(f);
@@ -233,65 +233,30 @@ TST *page_ranking(TST *graph, char *filename, StringArray *index){
     }
 
     double E = 0.0;
-    int k = 0;
     do{
-        #ifdef DEBUG_MODE
-        printf("k: %d\n", k);
-        #endif
         for (int i = 0; i < n; i++) {
             String *page = string_array_get(index, i);
-
-            #ifdef DEBUG_MODE
-            // printf("page: %s\n", strings_get_string(page));
-            #endif
-
             Page_Rank *page_rank = TST_search(graph, page);
 
-            #ifdef DEBUG_MODE
-            // printf("i: %d\n", i);
-            #endif
-
             double sum = 0.0;
-            // printf("size in: %d\n", page_rank_size_in(page_rank));
             for (int j = 0; j < page_rank_size_in(page_rank); j++)
             {
                 ForwardList *in = page_rank_get_in(page_rank);
                 char *x = forward_list_get(in, j);
                 String *in_page = strings_create(x);
 
-                #ifdef DEBUG_MODE
-                // printf("in: %s\n", x);
-                // printf("j: %d\n", j);
-                #endif
-
                 Page_Rank *in_page_rank = TST_search(graph, in_page);
 
-                #ifdef DEBUG_MODE
-                // printf("old: %.6f\n", page_rank_get_old_val(in_page_rank));
-                // printf("size out: %d\n", page_rank_size_out(in_page_rank));
-                #endif
                 sum += page_rank_get_old_val(in_page_rank) / fabs(page_rank_size_out(in_page_rank));
-
-                #ifdef DEBUG_MODE
-                // printf("sum: %.6f\n", sum);
-                #endif
 
                 strings_destroy(in_page);
             }
-            #ifdef DEBUG_MODE
-            // printf("new 1: %.6f\n", page_rank_get_val(page_rank));
-            // printf("old 1: %.6f\n", page_rank_get_old_val(page_rank));
-            #endif
             page_rank_set_old_val(page_rank, page_rank_get_val(page_rank));
             page_rank_set_val(page_rank, ((1 - a) / n) + (a * sum));
 
             if(page_rank_size_out(page_rank) == 0){
                 page_rank_set_val(page_rank, ((1 - a) / n) + (a * page_rank_get_old_val(page_rank)) + (a * sum));
             }
-            #ifdef DEBUG_MODE
-            // printf("new 2: %.6f\n", page_rank_get_val(page_rank));
-            // printf("old 2: %.6f\n", page_rank_get_old_val(page_rank));
-            #endif
         } 
 
         double sum_diff = 0.0;
@@ -299,23 +264,9 @@ TST *page_ranking(TST *graph, char *filename, StringArray *index){
         {
             String *page = string_array_get(index, i);
             Page_Rank *page_rank_e = TST_search(graph, page);
-
-            #ifdef DEBUG_MODE
-            // printf("new: %.6f\n", page_rank_get_val(page_rank_e));
-            // printf("old: %.6f\n", page_rank_get_old_val(page_rank_e));
-            #endif
             sum_diff += fabs(page_rank_get_val(page_rank_e) - page_rank_get_old_val(page_rank_e));
-
-            #ifdef DEBUG_MODE
-            // printf("sum_diff: %.6f\n", sum_diff);
-            #endif
         }
         E = (1.0 / n) * sum_diff;
-        #ifdef DEBUG_MODE
-        printf("E: %.7f\n", E);
-        #endif
-        
-        k++;
     } while (E > 0.000001);
 
     return graph;
