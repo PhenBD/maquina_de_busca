@@ -3,6 +3,7 @@
 
 # Ignorar arquivos de comparação
 /exemplo/
+/teste/
 
 # Ignorar diretórios de build
 /objects/

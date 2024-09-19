@@ -53,6 +53,7 @@ double page_rank_get_val(Page_Rank *pr)
 
 void page_rank_set_val(Page_Rank *pr, double val)
 {
+    pr->pr_old = pr->pr;
     pr->pr = val;
 }
 

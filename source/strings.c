@@ -21,7 +21,7 @@ String *strings_create(char *c)
     return s;
 }
 
-char *strings_get_string(String *s)
+char *strings_get(String *s)
 {
     return s->c;
 }
