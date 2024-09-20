@@ -1,5 +1,5 @@
 # Ignorar arquivos de configuração do editor
-.vscode/
+# .vscode/
 
 # Ignorar arquivos de comparação
 /exemplo/
